@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chime</title>
+  </head>
+  <body>
+    <div>
+      <div>
+        <canvas id="osc"></canvas>
+        <div
+          id="oscs"
+          style="display: flex; flex-direction: row; flex-wrap: wrap"
+        >
+          <canvas id="osc1"></canvas>
+          <canvas id="osc2"></canvas>
+          <canvas id="osc3"></canvas>
+          <canvas id="osc4"></canvas>
+        </div>
+      </div>
+      <div id="controls">
+        <button id="btn-stop">stop</button>
+        <div
+          style="
+            display: flex;
+            flex-direction: row;
+            justify-content: left;
+            align-items: center;
+          "
+        >
+          <input type="range" min="5" max="15" value="8" id="slider" />
+          <span id="sliderv">256</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="build/main.js"></script>
+  </body>
+</html>
