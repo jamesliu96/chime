@@ -157,12 +157,38 @@ const noteFrequency = {
 const toFreq = (key = 0) => typeof key === 'number'
     ? key
     : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] ?? 0;
+function initNodes(type, outputNode, stopTime, resolve) {
+    const audioContext = outputNode.context;
+    const oscillator = audioContext.createOscillator();
+    if (type instanceof PeriodicWave) {
+        oscillator.setPeriodicWave(type);
+    }
+    else {
+        oscillator.type = type;
+    }
+    oscillator.start();
+    oscillator.stop(stopTime);
+    const gain = audioContext.createGain();
+    oscillator.connect(gain);
+    gain.connect(outputNode);
+    oscillator.onended = () => {
+        gain.disconnect();
+        oscillator.disconnect();
+        resolve();
+    };
+    return { oscillator, gain };
+}
+function oscillate(oscillator, gain, frequency, from, volume = 1, detune = 0) {
+    oscillator.frequency.setValueAtTime(frequency, from);
+    oscillator.detune.setValueAtTime(detune, from);
+    gain.gain.setValueAtTime(volume, from);
+}
 export var Chime;
 (function (Chime) {
     function playNotes(notes, tempo, type, outputNode) {
         return new Promise((resolve) => {
             if (!notes.length)
-                return;
+                return resolve();
             const { oscillator, gain } = initNodes(type, outputNode, notes.reduce((acc, [_, beats]) => acc + b2t(beats, tempo), 0), resolve);
             notes.reduce((from, [frequency, beats, volume, detune]) => {
                 const to = from + b2t(beats, tempo);
@@ -176,7 +202,7 @@ export var Chime;
     function playData(data, type, outputNode, absolute = false) {
         return new Promise((resolve) => {
             if (!data.length)
-                return;
+                return resolve();
             const { oscillator, gain } = initNodes(type, outputNode, Math.max(...data.map(([_, time]) => time)), resolve);
             data.forEach(([frequency, startTime, durationOrEndTime, volume, detune]) => {
                 oscillate(oscillator, gain, toFreq(frequency), startTime, volume, detune);
@@ -185,30 +211,4 @@ export var Chime;
         });
     }
     Chime.playData = playData;
-    function initNodes(type, outputNode, stopTime, resolve) {
-        const audioContext = outputNode.context;
-        const oscillator = audioContext.createOscillator();
-        if (type instanceof PeriodicWave) {
-            oscillator.setPeriodicWave(type);
-        }
-        else {
-            oscillator.type = type;
-        }
-        oscillator.start();
-        oscillator.stop(stopTime);
-        const gain = audioContext.createGain();
-        oscillator.connect(gain);
-        gain.connect(outputNode);
-        oscillator.onended = () => {
-            gain.disconnect();
-            oscillator.disconnect();
-            resolve();
-        };
-        return { oscillator, gain };
-    }
-    function oscillate(oscillator, gain, frequency, from, volume = 1, detune = 0) {
-        oscillator.frequency.setValueAtTime(frequency, from);
-        oscillator.detune.setValueAtTime(detune, from);
-        gain.gain.setValueAtTime(volume, from);
-    }
 })(Chime || (Chime = {}));

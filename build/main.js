@@ -34,7 +34,7 @@ function playNotesSong(context) {
         ['e4', 4],
         ['f4', 4],
         ['g4', 4],
-    ], 60, 'sine', analyser);
+    ], 90, 'sine', analyser);
     return [analyser];
 }
 function playDataKirby(context) {
