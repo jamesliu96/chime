@@ -163,6 +163,48 @@ const toFreq = (key: Key = 0) =>
     ? key
     : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] ?? 0;
 
+function initNodes(
+  type: PeriodicWave | Omit<OscillatorType, 'custom'>,
+  outputNode: AudioNode,
+  stopTime: number,
+  resolve: () => void
+) {
+  const audioContext = outputNode.context;
+  /* oscillator */
+  const oscillator = audioContext.createOscillator();
+  if (type instanceof PeriodicWave) {
+    oscillator.setPeriodicWave(type);
+  } else {
+    oscillator.type = type as OscillatorType;
+  }
+  oscillator.start();
+  oscillator.stop(stopTime);
+  /* gain */
+  const gain = audioContext.createGain();
+  /* connect: oscillator -> gain -> outputNode */
+  oscillator.connect(gain);
+  gain.connect(outputNode);
+  oscillator.onended = () => {
+    gain.disconnect();
+    oscillator.disconnect();
+    resolve();
+  };
+  return { oscillator, gain };
+}
+
+function oscillate(
+  oscillator: OscillatorNode,
+  gain: GainNode,
+  frequency: number,
+  from: number,
+  volume = 1,
+  detune = 0
+) {
+  oscillator.frequency.setValueAtTime(frequency, from);
+  oscillator.detune.setValueAtTime(detune, from);
+  gain.gain.setValueAtTime(volume, from);
+}
+
 export namespace Chime {
   export function playNotes(
     notes: (
@@ -175,7 +217,7 @@ export namespace Chime {
     outputNode: AudioNode
   ) {
     return new Promise<void>((resolve) => {
-      if (!notes.length) return;
+      if (!notes.length) return resolve();
       const { oscillator, gain } = initNodes(
         type,
         outputNode,
@@ -202,7 +244,7 @@ export namespace Chime {
     absolute = false
   ) {
     return new Promise<void>((resolve) => {
-      if (!data.length) return;
+      if (!data.length) return resolve();
       const { oscillator, gain } = initNodes(
         type,
         outputNode,
@@ -230,47 +272,5 @@ export namespace Chime {
         }
       );
     });
-  }
-
-  function initNodes(
-    type: PeriodicWave | Omit<OscillatorType, 'custom'>,
-    outputNode: AudioNode,
-    stopTime: number,
-    resolve: () => void
-  ) {
-    const audioContext = outputNode.context;
-    /* oscillator */
-    const oscillator = audioContext.createOscillator();
-    if (type instanceof PeriodicWave) {
-      oscillator.setPeriodicWave(type);
-    } else {
-      oscillator.type = type as OscillatorType;
-    }
-    oscillator.start();
-    oscillator.stop(stopTime);
-    /* gain */
-    const gain = audioContext.createGain();
-    /* connect: oscillator -> gain -> outputNode */
-    oscillator.connect(gain);
-    gain.connect(outputNode);
-    oscillator.onended = () => {
-      gain.disconnect();
-      oscillator.disconnect();
-      resolve();
-    };
-    return { oscillator, gain };
-  }
-
-  function oscillate(
-    oscillator: OscillatorNode,
-    gain: GainNode,
-    frequency: number,
-    from: number,
-    volume = 1,
-    detune = 0
-  ) {
-    oscillator.frequency.setValueAtTime(frequency, from);
-    oscillator.detune.setValueAtTime(detune, from);
-    gain.gain.setValueAtTime(volume, from);
   }
 }
