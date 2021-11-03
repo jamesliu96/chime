@@ -19,6 +19,10 @@ import {
   ZeldaSynth2,
 } from './songs/zelda.js';
 
+const a = [...Array(65536)].map(() => Math.random() * 2 - 1);
+const b = a.slice();
+b.unshift(b.pop());
+
 const [width, height] = [600, 300];
 
 let currentContext: AudioContext | null = null;
@@ -68,7 +72,6 @@ function playNotesSong(context: AudioContext) {
   );
   return [analyser];
 }
-const randgen = () => Math.random() * 2 - 1;
 function playDataKirby(context: AudioContext) {
   const analyser = context.createAnalyser();
   const analyser1 = context.createAnalyser();
@@ -80,9 +83,6 @@ function playDataKirby(context: AudioContext) {
   analyser3.connect(analyser);
   analyser4.connect(analyser);
   Chime.playData(KirbyBass1.map(mapper), 'triangle', analyser1);
-  const a = [...Array(32768)].map(randgen);
-  const b = a.slice();
-  b.unshift(b.pop());
   Chime.playData(
     KirbyBass2.map(mapper),
     context.createPeriodicWave(a, b),
@@ -103,9 +103,6 @@ function playDataMario(context: AudioContext) {
   analyser3.connect(analyser);
   analyser4.connect(analyser);
   Chime.playData(MarioBass1.map(mapper), 'triangle', analyser1);
-  const a = [...Array(32768)].map(randgen);
-  const b = a.slice();
-  b.unshift(b.pop());
   Chime.playData(
     MarioBass2.map(mapper),
     context.createPeriodicWave(a, b),
@@ -126,9 +123,6 @@ function playDataZelda(context: AudioContext) {
   analyser3.connect(analyser);
   analyser4.connect(analyser);
   Chime.playData(ZeldaBass1.map(mapper), 'triangle', analyser1);
-  const a = [...Array(32768)].map(randgen);
-  const b = a.slice();
-  b.unshift(b.pop());
   Chime.playData(
     ZeldaBass2.map((o) => ({ ...o, name: 'C4' })).map(mapper),
     context.createPeriodicWave(a, b),
@@ -148,6 +142,7 @@ function playDataMetroid(context: AudioContext) {
   Chime.playData(MetroidSynth2.map(mapper), 'square', analyser2);
   return [analyser, analyser1, analyser2];
 }
+
 const controls = document.getElementById('controls') as HTMLDivElement;
 const btnStop = document.getElementById('btn-stop') as HTMLButtonElement;
 [
@@ -197,7 +192,7 @@ const canvases = document.getElementById('oscs') as HTMLDivElement;
 canvases.style.width = `${width}px`;
 canvases.style.height = `${height}px`;
 const ctx2dGroup = [canvas.getContext('2d')];
-['green', 'purple', 'purple', 'green'].forEach((color, idx) => {
+['teal', 'purple', 'maroon', 'olive'].forEach((color, idx) => {
   const c = document.getElementById(`osc${idx + 1}`) as HTMLCanvasElement;
   c.width = canvasWidth / 2;
   c.height = canvasHeight / 2;
@@ -206,6 +201,7 @@ const ctx2dGroup = [canvas.getContext('2d')];
   c.style.backgroundColor = color;
   ctx2dGroup.push(c.getContext('2d'));
 });
+
 function draw() {
   ctx2dGroup.forEach((ctx2d, idx) => {
     const [w, h] = idx
