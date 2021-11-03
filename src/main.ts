@@ -66,7 +66,7 @@ function playNotesSong(context: AudioContext) {
       ['f4', 4],
       ['g4', 4],
     ],
-    60,
+    90,
     'sine',
     analyser
   );
