@@ -3,6 +3,9 @@ import { KirbyBass1, KirbyBass2, KirbySynth1, KirbySynth2, } from './songs/kirby
 import { MarioBass1, MarioBass2, MarioSynth1, MarioSynth2, } from './songs/mario.js';
 import { MetroidSynth1, MetroidSynth2 } from './songs/metroid.js';
 import { ZeldaBass1, ZeldaBass2, ZeldaSynth1, ZeldaSynth2, } from './songs/zelda.js';
+const a = [...Array(65536)].map(() => Math.random() * 2 - 1);
+const b = a.slice();
+b.unshift(b.pop());
 const [width, height] = [600, 300];
 let currentContext = null;
 let currentAnaysers = [];
@@ -34,7 +37,6 @@ function playNotesSong(context) {
     ], 60, 'sine', analyser);
     return [analyser];
 }
-const randgen = () => Math.random() * 2 - 1;
 function playDataKirby(context) {
     const analyser = context.createAnalyser();
     const analyser1 = context.createAnalyser();
@@ -46,9 +48,6 @@ function playDataKirby(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(KirbyBass1.map(mapper), 'triangle', analyser1);
-    const a = [...Array(32768)].map(randgen);
-    const b = a.slice();
-    b.unshift(b.pop());
     Chime.playData(KirbyBass2.map(mapper), context.createPeriodicWave(a, b), analyser2);
     Chime.playData(KirbySynth1.map(mapper), 'square', analyser3);
     Chime.playData(KirbySynth2.map(mapper), 'square', analyser4);
@@ -65,9 +64,6 @@ function playDataMario(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(MarioBass1.map(mapper), 'triangle', analyser1);
-    const a = [...Array(32768)].map(randgen);
-    const b = a.slice();
-    b.unshift(b.pop());
     Chime.playData(MarioBass2.map(mapper), context.createPeriodicWave(a, b), analyser2);
     Chime.playData(MarioSynth1.map(mapper), 'square', analyser3);
     Chime.playData(MarioSynth2.map(mapper), 'square', analyser4);
@@ -84,9 +80,6 @@ function playDataZelda(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(ZeldaBass1.map(mapper), 'triangle', analyser1);
-    const a = [...Array(32768)].map(randgen);
-    const b = a.slice();
-    b.unshift(b.pop());
     Chime.playData(ZeldaBass2.map((o) => ({ ...o, name: 'C4' })).map(mapper), context.createPeriodicWave(a, b), analyser2);
     Chime.playData(ZeldaSynth1.map(mapper), 'square', analyser3);
     Chime.playData(ZeldaSynth2.map(mapper), 'square', analyser4);
@@ -152,7 +145,7 @@ const canvases = document.getElementById('oscs');
 canvases.style.width = `${width}px`;
 canvases.style.height = `${height}px`;
 const ctx2dGroup = [canvas.getContext('2d')];
-['green', 'purple', 'purple', 'green'].forEach((color, idx) => {
+['teal', 'purple', 'maroon', 'olive'].forEach((color, idx) => {
     const c = document.getElementById(`osc${idx + 1}`);
     c.width = canvasWidth / 2;
     c.height = canvasHeight / 2;

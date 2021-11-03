@@ -156,7 +156,7 @@ const noteFrequency = {
 };
 const toFreq = (key = 0) => typeof key === 'number'
     ? key
-    : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] || 0;
+    : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] ?? 0;
 export var Chime;
 (function (Chime) {
     function playNotes(notes, tempo, type, outputNode) {
