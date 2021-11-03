@@ -161,7 +161,7 @@ type Key = string | number;
 const toFreq = (key: Key = 0) =>
   typeof key === 'number'
     ? key
-    : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] || 0;
+    : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] ?? 0;
 
 export namespace Chime {
   export function playNotes(
