@@ -158,13 +158,15 @@ const noteFrequency: Record<string, number> = {
 
 type Key = string | number;
 
+type WaveType = PeriodicWave | Omit<OscillatorType, 'custom'>;
+
 const toFreq = (key: Key = 0) =>
   typeof key === 'number'
     ? key
     : noteFrequency[`${key.slice(0, 1).toUpperCase()}${key.slice(1)}`] ?? 0;
 
 function initNodes(
-  type: PeriodicWave | Omit<OscillatorType, 'custom'>,
+  type: WaveType,
   outputNode: AudioNode,
   stopTime: number,
   resolve: () => void
@@ -213,7 +215,7 @@ export namespace Chime {
       | [Key, number, number, number]
     )[],
     tempo: number,
-    type: PeriodicWave | Omit<OscillatorType, 'custom'>,
+    type: WaveType,
     outputNode: AudioNode
   ) {
     return new Promise<void>((resolve) => {
@@ -239,7 +241,7 @@ export namespace Chime {
       | [Key, number, number, number]
       | [Key, number, number, number, number]
     )[],
-    type: PeriodicWave | Omit<OscillatorType, 'custom'>,
+    type: WaveType,
     outputNode: AudioNode,
     absolute = false
   ) {

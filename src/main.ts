@@ -19,14 +19,13 @@ import {
   ZeldaSynth2,
 } from './songs/zelda.js';
 
-const a = [...Array(65536)].map(() => Math.random() * 2 - 1);
-const b = a.slice();
-b.unshift(b.pop());
+const r = [...Array(2 ** 20)].map(() => Math.random() * 2 - 1);
 
 const [width, height] = [600, 300];
 
 let currentContext: AudioContext | null = null;
 let currentAnaysers: AnalyserNode[] = [];
+let currentGain: GainNode | null = null;
 
 const mapper = ({
   name,
@@ -66,7 +65,7 @@ function playNotesSong(context: AudioContext) {
       ['f4', 4],
       ['g4', 4],
     ],
-    90,
+    80,
     'sine',
     analyser
   );
@@ -85,7 +84,7 @@ function playDataKirby(context: AudioContext) {
   Chime.playData(KirbyBass1.map(mapper), 'triangle', analyser1);
   Chime.playData(
     KirbyBass2.map(mapper),
-    context.createPeriodicWave(a, b),
+    context.createPeriodicWave(r, r),
     analyser2
   );
   Chime.playData(KirbySynth1.map(mapper), 'square', analyser3);
@@ -105,7 +104,7 @@ function playDataMario(context: AudioContext) {
   Chime.playData(MarioBass1.map(mapper), 'triangle', analyser1);
   Chime.playData(
     MarioBass2.map(mapper),
-    context.createPeriodicWave(a, b),
+    context.createPeriodicWave(r, r),
     analyser2
   );
   Chime.playData(MarioSynth1.map(mapper), 'square', analyser3);
@@ -125,7 +124,7 @@ function playDataZelda(context: AudioContext) {
   Chime.playData(ZeldaBass1.map(mapper), 'triangle', analyser1);
   Chime.playData(
     ZeldaBass2.map((o) => ({ ...o, name: 'C4' })).map(mapper),
-    context.createPeriodicWave(a, b),
+    context.createPeriodicWave(r, r),
     analyser2
   );
   Chime.playData(ZeldaSynth1.map(mapper), 'square', analyser3);
@@ -159,10 +158,18 @@ const btnStop = document.getElementById('btn-stop') as HTMLButtonElement;
     if (currentContext && currentContext.state !== 'closed')
       currentContext.close();
     currentContext = new AudioContext();
+    currentGain = currentContext.createGain();
+    currentGain.connect(currentContext.destination);
+    currentGain.gain.value = parseInt(sliderGain.value) / 100;
     currentAnaysers = fn(currentContext);
-    currentAnaysers.forEach((analyser, idx) => {
-      if (!idx) analyser.connect(currentContext.destination);
-      analyser.fftSize = 2 ** parseInt(slider.value);
+    if (currentAnaysers.length) {
+      currentAnaysers[0].connect(currentGain);
+      const masterAnalyser = currentContext.createAnalyser();
+      currentGain.connect(masterAnalyser);
+      currentAnaysers[0] = masterAnalyser;
+    }
+    currentAnaysers.forEach((analyser) => {
+      analyser.fftSize = 2 ** parseInt(sliderFFTSize.value);
     });
   });
   controls.insertBefore(btn, btnStop);
@@ -171,14 +178,27 @@ btnStop.addEventListener('click', () => {
   if (currentContext && currentContext.state !== 'closed')
     currentContext.close();
 });
-const slider = document.getElementById('slider') as HTMLInputElement;
-const sliderV = document.getElementById('sliderv') as HTMLSpanElement;
-slider.addEventListener('input', function () {
+const sliderFFTSize = document.getElementById(
+  'sliderFFTSize'
+) as HTMLInputElement;
+const sliderFFTSizeV = document.getElementById(
+  'sliderFFTSizeV'
+) as HTMLSpanElement;
+sliderFFTSize.addEventListener('input', function () {
   const v = 2 ** parseInt(this.value);
   currentAnaysers.forEach((analyser) => {
     analyser.fftSize = v;
   });
-  sliderV.innerText = `${v}`;
+  sliderFFTSizeV.innerText = `${v}`;
+});
+const sliderGain = document.getElementById('sliderGain') as HTMLInputElement;
+const sliderGainV = document.getElementById('sliderGainV') as HTMLSpanElement;
+sliderGain.addEventListener('input', function () {
+  const v = parseInt(this.value) / 100;
+  if (currentGain) {
+    currentGain.gain.value = v;
+  }
+  sliderGainV.innerText = `${Math.floor(v * 100)}`;
 });
 const canvasWidth = width * devicePixelRatio;
 const canvasHeight = height * devicePixelRatio;
