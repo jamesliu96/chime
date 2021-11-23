@@ -3,12 +3,11 @@ import { KirbyBass1, KirbyBass2, KirbySynth1, KirbySynth2, } from './songs/kirby
 import { MarioBass1, MarioBass2, MarioSynth1, MarioSynth2, } from './songs/mario.js';
 import { MetroidSynth1, MetroidSynth2 } from './songs/metroid.js';
 import { ZeldaBass1, ZeldaBass2, ZeldaSynth1, ZeldaSynth2, } from './songs/zelda.js';
-const a = [...Array(65536)].map(() => Math.random() * 2 - 1);
-const b = a.slice();
-b.unshift(b.pop());
+const r = [...Array(2 ** 20)].map(() => Math.random() * 2 - 1);
 const [width, height] = [600, 300];
 let currentContext = null;
 let currentAnaysers = [];
+let currentGain = null;
 const mapper = ({ name, time, duration, velocity, }) => [
     name,
     time,
@@ -34,7 +33,7 @@ function playNotesSong(context) {
         ['e4', 4],
         ['f4', 4],
         ['g4', 4],
-    ], 90, 'sine', analyser);
+    ], 80, 'sine', analyser);
     return [analyser];
 }
 function playDataKirby(context) {
@@ -48,7 +47,7 @@ function playDataKirby(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(KirbyBass1.map(mapper), 'triangle', analyser1);
-    Chime.playData(KirbyBass2.map(mapper), context.createPeriodicWave(a, b), analyser2);
+    Chime.playData(KirbyBass2.map(mapper), context.createPeriodicWave(r, r), analyser2);
     Chime.playData(KirbySynth1.map(mapper), 'square', analyser3);
     Chime.playData(KirbySynth2.map(mapper), 'square', analyser4);
     return [analyser, analyser1, analyser2, analyser3, analyser4];
@@ -64,7 +63,7 @@ function playDataMario(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(MarioBass1.map(mapper), 'triangle', analyser1);
-    Chime.playData(MarioBass2.map(mapper), context.createPeriodicWave(a, b), analyser2);
+    Chime.playData(MarioBass2.map(mapper), context.createPeriodicWave(r, r), analyser2);
     Chime.playData(MarioSynth1.map(mapper), 'square', analyser3);
     Chime.playData(MarioSynth2.map(mapper), 'square', analyser4);
     return [analyser, analyser1, analyser2, analyser3, analyser4];
@@ -80,7 +79,7 @@ function playDataZelda(context) {
     analyser3.connect(analyser);
     analyser4.connect(analyser);
     Chime.playData(ZeldaBass1.map(mapper), 'triangle', analyser1);
-    Chime.playData(ZeldaBass2.map((o) => ({ ...o, name: 'C4' })).map(mapper), context.createPeriodicWave(a, b), analyser2);
+    Chime.playData(ZeldaBass2.map((o) => ({ ...o, name: 'C4' })).map(mapper), context.createPeriodicWave(r, r), analyser2);
     Chime.playData(ZeldaSynth1.map(mapper), 'square', analyser3);
     Chime.playData(ZeldaSynth2.map(mapper), 'square', analyser4);
     return [analyser, analyser1, analyser2, analyser3, analyser4];
@@ -111,11 +110,18 @@ const btnStop = document.getElementById('btn-stop');
         if (currentContext && currentContext.state !== 'closed')
             currentContext.close();
         currentContext = new AudioContext();
+        currentGain = currentContext.createGain();
+        currentGain.connect(currentContext.destination);
+        currentGain.gain.value = parseInt(sliderGain.value) / 100;
         currentAnaysers = fn(currentContext);
-        currentAnaysers.forEach((analyser, idx) => {
-            if (!idx)
-                analyser.connect(currentContext.destination);
-            analyser.fftSize = 2 ** parseInt(slider.value);
+        if (currentAnaysers.length) {
+            currentAnaysers[0].connect(currentGain);
+            const masterAnalyser = currentContext.createAnalyser();
+            currentGain.connect(masterAnalyser);
+            currentAnaysers[0] = masterAnalyser;
+        }
+        currentAnaysers.forEach((analyser) => {
+            analyser.fftSize = 2 ** parseInt(sliderFFTSize.value);
         });
     });
     controls.insertBefore(btn, btnStop);
@@ -124,14 +130,23 @@ btnStop.addEventListener('click', () => {
     if (currentContext && currentContext.state !== 'closed')
         currentContext.close();
 });
-const slider = document.getElementById('slider');
-const sliderV = document.getElementById('sliderv');
-slider.addEventListener('input', function () {
+const sliderFFTSize = document.getElementById('sliderFFTSize');
+const sliderFFTSizeV = document.getElementById('sliderFFTSizeV');
+sliderFFTSize.addEventListener('input', function () {
     const v = 2 ** parseInt(this.value);
     currentAnaysers.forEach((analyser) => {
         analyser.fftSize = v;
     });
-    sliderV.innerText = `${v}`;
+    sliderFFTSizeV.innerText = `${v}`;
+});
+const sliderGain = document.getElementById('sliderGain');
+const sliderGainV = document.getElementById('sliderGainV');
+sliderGain.addEventListener('input', function () {
+    const v = parseInt(this.value) / 100;
+    if (currentGain) {
+        currentGain.gain.value = v;
+    }
+    sliderGainV.innerText = `${Math.floor(v * 100)}`;
 });
 const canvasWidth = width * devicePixelRatio;
 const canvasHeight = height * devicePixelRatio;
