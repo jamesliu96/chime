@@ -6,7 +6,7 @@ import { ZeldaBass1, ZeldaBass2, ZeldaSynth1, ZeldaSynth2, } from './songs/zelda
 const r = [...Array(2 ** 20)].map(() => Math.random() * 2 - 1);
 const [width, height] = [600, 300];
 let currentContext = null;
-let currentAnaysers = [];
+let currentAnalysers = [];
 let currentGain = null;
 const mapper = ({ name, time, duration, velocity, }) => [
     name,
@@ -113,14 +113,14 @@ const btnStop = document.getElementById('btn-stop');
         currentGain = currentContext.createGain();
         currentGain.connect(currentContext.destination);
         currentGain.gain.value = parseInt(sliderGain.value) / 100;
-        currentAnaysers = fn(currentContext);
-        if (currentAnaysers.length) {
-            currentAnaysers[0].connect(currentGain);
+        currentAnalysers = fn(currentContext);
+        if (currentAnalysers.length) {
+            currentAnalysers[0].connect(currentGain);
             const masterAnalyser = currentContext.createAnalyser();
             currentGain.connect(masterAnalyser);
-            currentAnaysers[0] = masterAnalyser;
+            currentAnalysers[0] = masterAnalyser;
         }
-        currentAnaysers.forEach((analyser) => {
+        currentAnalysers.forEach((analyser) => {
             analyser.fftSize = 2 ** parseInt(sliderFFTSize.value);
         });
     });
@@ -134,7 +134,7 @@ const sliderFFTSize = document.getElementById('sliderFFTSize');
 const sliderFFTSizeV = document.getElementById('sliderFFTSizeV');
 sliderFFTSize.addEventListener('input', function () {
     const v = 2 ** parseInt(this.value);
-    currentAnaysers.forEach((analyser) => {
+    currentAnalysers.forEach((analyser) => {
         analyser.fftSize = v;
     });
     sliderFFTSizeV.innerText = `${v}`;
@@ -178,7 +178,7 @@ function draw() {
     });
     if (!currentContext)
         return;
-    currentAnaysers.forEach((analyser, idx) => {
+    currentAnalysers.forEach((analyser, idx) => {
         const ctx2d = ctx2dGroup[idx];
         if (ctx2d) {
             const [w, h] = idx
