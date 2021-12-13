@@ -24,7 +24,7 @@ const r = [...Array(2 ** 20)].map(() => Math.random() * 2 - 1);
 const [width, height] = [600, 300];
 
 let currentContext: AudioContext | null = null;
-let currentAnaysers: AnalyserNode[] = [];
+let currentAnalysers: AnalyserNode[] = [];
 let currentGain: GainNode | null = null;
 
 const mapper = ({
@@ -161,14 +161,14 @@ const btnStop = document.getElementById('btn-stop') as HTMLButtonElement;
     currentGain = currentContext.createGain();
     currentGain.connect(currentContext.destination);
     currentGain.gain.value = parseInt(sliderGain.value) / 100;
-    currentAnaysers = fn(currentContext);
-    if (currentAnaysers.length) {
-      currentAnaysers[0].connect(currentGain);
+    currentAnalysers = fn(currentContext);
+    if (currentAnalysers.length) {
+      currentAnalysers[0].connect(currentGain);
       const masterAnalyser = currentContext.createAnalyser();
       currentGain.connect(masterAnalyser);
-      currentAnaysers[0] = masterAnalyser;
+      currentAnalysers[0] = masterAnalyser;
     }
-    currentAnaysers.forEach((analyser) => {
+    currentAnalysers.forEach((analyser) => {
       analyser.fftSize = 2 ** parseInt(sliderFFTSize.value);
     });
   });
@@ -186,7 +186,7 @@ const sliderFFTSizeV = document.getElementById(
 ) as HTMLSpanElement;
 sliderFFTSize.addEventListener('input', function () {
   const v = 2 ** parseInt(this.value);
-  currentAnaysers.forEach((analyser) => {
+  currentAnalysers.forEach((analyser) => {
     analyser.fftSize = v;
   });
   sliderFFTSizeV.innerText = `${v}`;
@@ -230,7 +230,7 @@ function draw() {
     ctx2d.clearRect(0, 0, w, h);
   });
   if (!currentContext) return;
-  currentAnaysers.forEach((analyser, idx) => {
+  currentAnalysers.forEach((analyser, idx) => {
     const ctx2d = ctx2dGroup[idx];
     if (ctx2d) {
       const [w, h] = idx
