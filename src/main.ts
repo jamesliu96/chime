@@ -13,6 +13,21 @@ import {
 } from './songs/mario.js';
 import { MetroidSynth1, MetroidSynth2 } from './songs/metroid.js';
 import {
+  SimpsonsAahs,
+  SimpsonsClarinet,
+  SimpsonsContrabass,
+  SimpsonsEnsemble,
+  SimpsonsHit,
+  SimpsonsKit,
+  SimpsonsPad,
+  SimpsonsSax,
+  SimpsonsTimpani,
+  SimpsonsTrombone,
+  SimpsonsTuba,
+  SimpsonsXylophone,
+} from './songs/simpsons.js';
+import { Unravel } from './songs/unravel.js';
+import {
   ZeldaBass1,
   ZeldaBass2,
   ZeldaSynth1,
@@ -141,6 +156,39 @@ function playDataMetroid(context: AudioContext) {
   Chime.playData(MetroidSynth2.map(mapper), 'square', analyser2);
   return [analyser, analyser1, analyser2];
 }
+function playDataUnravel(context: AudioContext) {
+  const analyser = context.createAnalyser();
+  Chime.playData(Unravel.map(mapper), 'square', analyser);
+  return [analyser];
+}
+function playDataSimpsons(context: AudioContext) {
+  const analyser = context.createAnalyser();
+  Chime.playData(SimpsonsAahs.map(mapper), 'sine', analyser);
+  Chime.playData(SimpsonsClarinet.map(mapper), 'triangle', analyser);
+  Chime.playData(SimpsonsContrabass.map(mapper), 'sine', analyser);
+  Chime.playData(SimpsonsEnsemble.map(mapper), 'sine', analyser);
+  Chime.playData(
+    SimpsonsHit.map(mapper),
+    context.createPeriodicWave(r, r),
+    analyser
+  );
+  Chime.playData(
+    SimpsonsKit.map(mapper),
+    context.createPeriodicWave(r, r),
+    analyser
+  );
+  Chime.playData(SimpsonsPad.map(mapper), 'triangle', analyser);
+  Chime.playData(SimpsonsSax.map(mapper), 'sine', analyser);
+  Chime.playData(
+    SimpsonsTimpani.map(mapper),
+    context.createPeriodicWave(r, r),
+    analyser
+  );
+  Chime.playData(SimpsonsTrombone.map(mapper), 'sine', analyser);
+  Chime.playData(SimpsonsTuba.map(mapper), 'sine', analyser);
+  Chime.playData(SimpsonsXylophone.map(mapper), 'sine', analyser);
+  return [analyser];
+}
 
 const controls = document.getElementById('controls') as HTMLDivElement;
 const btnStop = document.getElementById('btn-stop') as HTMLButtonElement;
@@ -150,6 +198,8 @@ const btnStop = document.getElementById('btn-stop') as HTMLButtonElement;
   playDataMario,
   playDataZelda,
   playDataMetroid,
+  playDataUnravel,
+  playDataSimpsons,
 ].forEach((fn) => {
   const btn = document.createElement('button');
   btn.id = `btn-${fn.name}`;
